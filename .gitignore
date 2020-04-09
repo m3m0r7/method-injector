@@ -1,2 +1,6 @@
 vendor
 composer.lock
+test.php
+.php_cs.cache
+cghooks.lock
+

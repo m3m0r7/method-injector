@@ -1,0 +1,10 @@
+<ruleset name="Enhanced PSR-2">
+    <description>Enhanced PSR-2</description>
+    <rule ref="PSR2">
+        <exclude name="Generic.Files.LineLength.TooLong"/>
+    </rule>
+    <arg name="colors"/>
+    <arg value="p"/>
+
+    <ini name="memory_limit" value="-1"/>
+</ruleset>
