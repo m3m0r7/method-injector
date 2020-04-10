@@ -5,6 +5,7 @@ use MethodInjector\Helper\NodeBuilder;
 use MethodInjector\Replacer\ConstantReplacer;
 use MethodInjector\Replacer\FieldReplacer;
 use MethodInjector\Replacer\FunctionReplacer;
+use MethodInjector\Replacer\InstanceReplacer;
 use MethodInjector\Replacer\MethodReplacer;
 use MethodInjector\Replacer\ReplacerInterface;
 use MethodInjector\Traits\ReplacerAware;
@@ -19,6 +20,7 @@ class Inspector
     const METHOD = 2;
     const CONSTANT = 3;
     const FIELD = 4;
+    const INSTANCE = 5;
 
     /**
      * @var array<null|string>
@@ -129,6 +131,7 @@ class Inspector
                 [self::METHOD, MethodReplacer::class],
                 [self::CONSTANT, ConstantReplacer::class],
                 [self::FIELD, FieldReplacer::class],
+                [self::INSTANCE, InstanceReplacer::class],
             ];
         }
 
@@ -223,6 +226,7 @@ class Inspector
         if (!($node instanceof Node\Stmt\Class_)) {
             return;
         }
+
         $classPathAndName = implode('\\', $namespace) . '\\' . $node->name->name;
         if ($className !== $classPathAndName) {
             return;

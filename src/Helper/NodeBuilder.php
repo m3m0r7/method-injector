@@ -73,6 +73,13 @@ class NodeBuilder
         );
     }
 
+    public static function makeClassName(string $name)
+    {
+        return new Node\Name(
+            $name
+        );
+    }
+
     /**
      * @param $text
      * @return Node

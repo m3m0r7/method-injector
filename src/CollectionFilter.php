@@ -7,6 +7,7 @@ class CollectionFilter
 
     const FILTER_METHOD_REPLACER = [
         Inspector::FUNCTION,
+        Inspector::INSTANCE,
     ];
 
     const FILTER_CLASS_REPLACER = [

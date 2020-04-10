@@ -27,6 +27,20 @@ class Condition
     }
 
     /**
+     * @param $from
+     * @param $to
+     * @return $this
+     */
+    public function replaceInstance($from, $to): self
+    {
+        return $this->replace(
+            Inspector::INSTANCE,
+            $from,
+            $to
+        );
+    }
+
+    /**
      * @param $process
      * @return $this
      */
