@@ -1,5 +1,5 @@
 <?php
-namespace MethodInjector\Tests\Cases\Inspector;
+namespace MethodInjector\Test\Cases\Replacer;
 
 use MethodInjector\Condition;
 use MethodInjector\Inspector;
