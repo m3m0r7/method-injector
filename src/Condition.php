@@ -9,8 +9,8 @@ class Condition
 {
     use ReplacerAware;
 
-    protected $prepends = [];
-    protected $appends = [];
+    protected $before = [];
+    protected $after = [];
 
     /**
      * @param $from
@@ -30,9 +30,9 @@ class Condition
      * @param $process
      * @return $this
      */
-    public function prepend(callable $process): self
+    public function before(callable $process): self
     {
-        $this->prepends[] = NodeBuilder::expressible(
+        $this->before[] = NodeBuilder::expressible(
             NodeBuilder::callable(
                 $this->makeAnonymousFunctionEntryString(
                     $process
@@ -46,9 +46,9 @@ class Condition
      * @param $process
      * @return $this
      */
-    public function append(callable $process): self
+    public function after(callable $process): self
     {
-        $this->appends[] = NodeBuilder::expressible(
+        $this->after[] = NodeBuilder::expressible(
             NodeBuilder::callable(
                 $this->makeAnonymousFunctionEntryString(
                     $process
@@ -61,10 +61,10 @@ class Condition
     /**
      * @param $arguments
      */
-    public function getPrependsCollection($arguments): array
+    public function getBeforeCollection($arguments): array
     {
         return $this->injectArgumentToCollection(
-            $this->prepends,
+            $this->before,
             $arguments
         );
     }
@@ -72,10 +72,10 @@ class Condition
     /**
      * @param $arguments
      */
-    public function getAppendsCollection($arguments): array
+    public function getAfterCollection($arguments): array
     {
         return $this->injectArgumentToCollection(
-            $this->appends,
+            $this->after,
             $arguments
         );
     }

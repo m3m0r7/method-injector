@@ -201,7 +201,7 @@ echo $mock::TEST;
 ```
 
 ## メソッドの実行開始時に出力をする
-メソッドの実行開始時に何かしらの処理を挟みたい場合もあると思います。 `MethodInjector` では `Condition` クラスの `prepend` を指定することで、
+メソッドの実行開始時に何かしらの処理を挟みたい場合もあると思います。 `MethodInjector` では `Condition` クラスの `before` を指定することで、
 実行開始時に何かしらの処理を挟むことが出来ます。例えば、メソッド単体の実行時間を計測したい場合などに有用です。
 
 ```php
@@ -222,7 +222,7 @@ $test
                     '*',
                     function (Condition $condition) {
                         return $condition
-                            ->prepend(function () {
+                            ->before(function () {
                                 echo "Hello HEAD!\n";
                             });
                 }
@@ -235,7 +235,7 @@ $mock = $test->createMock(Test::class);
 ```
 
 ## メソッドの実行終了時に出力をする
-メソッドの実行終了時も開始時と同様に指定することができます。終了時の場合、 `append` を呼び出します。
+メソッドの実行終了時も開始時と同様に指定することができます。終了時の場合、 `after` を呼び出します。
 
 ```php
 <?php
@@ -255,7 +255,7 @@ $test
                     '*',
                     function (Condition $condition) {
                         return $condition
-                            ->append(function () {
+                            ->after(function () {
                                 echo "Finish to run.\n";
                             });
                 }

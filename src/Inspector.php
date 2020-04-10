@@ -268,7 +268,7 @@ class Inspector
 
                 // add collections
                 $method->stmts = array_merge(
-                    $condition->getPrependsCollection(
+                    $condition->getBeforeCollection(
                         NodeBuilder::makeArguments(...[
                             NodeBuilder::variable('this'),
                             NodeBuilder::magicConstant('__METHOD__'),
@@ -276,7 +276,7 @@ class Inspector
                     ),
                     [NodeBuilder::deferrable(
                         $method->stmts,
-                        $condition->getAppendsCollection(
+                        $condition->getAfterCollection(
                             NodeBuilder::makeArguments(...[
                                 NodeBuilder::variable('this'),
                                 NodeBuilder::magicConstant('__METHOD__'),

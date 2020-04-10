@@ -21,7 +21,7 @@ class ProcessingTest extends \PHPUnit\Framework\TestCase
                             'test',
                             function (Condition $condition) use (&$counter) {
                                 return $condition
-                                    ->prepend(
+                                    ->before(
                                         function ($class) use (&$counter) {
                                             $this->assertInstanceOf(
                                                 MethodInjectorInterface::class,
@@ -31,7 +31,7 @@ class ProcessingTest extends \PHPUnit\Framework\TestCase
                                             $counter++;
                                         }
                                     )
-                                    ->append(
+                                    ->after(
                                         function ($class) use (&$counter) {
                                             $this->assertInstanceOf(
                                                 MethodInjectorInterface::class,
