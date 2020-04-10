@@ -59,9 +59,9 @@ class Condition
     }
 
     /**
-     * @param $arguments
+     * @param Node[] $arguments
      */
-    public function getBeforeCollection($arguments): array
+    public function getBeforeCollection(array $arguments): array
     {
         return $this->injectArgumentToCollection(
             $this->before,
@@ -70,9 +70,9 @@ class Condition
     }
 
     /**
-     * @param $arguments
+     * @param Node[] $arguments
      */
-    public function getAfterCollection($arguments): array
+    public function getAfterCollection(array $arguments): array
     {
         return $this->injectArgumentToCollection(
             $this->after,

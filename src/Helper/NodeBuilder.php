@@ -41,7 +41,7 @@ class NodeBuilder
     }
 
     /**
-     * @param $scalar
+     * @param scalar $scalar
      */
     public function fromScalar($scalar): Node
     {
