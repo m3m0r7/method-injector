@@ -62,7 +62,7 @@ class NodeBuilder
                     : 0
             );
         }
-        if (is_float($scalar) || is_double($scalar)) {
+        if (is_float($scalar)) {
             return new Node\Scalar\DNumber(
                 $scalar
             );
