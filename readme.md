@@ -124,7 +124,6 @@ $test
         function (Inspector $inspector) {
             return $inspector
                 ->methodGroup(
-                    // リプレイス対象のメソッドを test  のみにする
                     'test',
                     function (Condition $condition) {
                         return $condition
