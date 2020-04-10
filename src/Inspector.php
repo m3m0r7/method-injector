@@ -253,13 +253,13 @@ class Inspector
             );
 
             foreach ($conditions as $name => $condition) {
+                if ($name !== '*' && $method->name->name !== $name) {
+                    continue;
+                }
                 foreach ($method->stmts as &$stmt) {
                     /**
                      * @var Condition $condition
                      */
-                    if ($name !== '*' && $method->name->name !== $name) {
-                        continue;
-                    }
                     $this->patchCollectionNode(
                         $condition->getCollection(CollectionFilter::FILTER_METHOD_REPLACER),
                         $stmt
@@ -271,14 +271,18 @@ class Inspector
                     $condition->getPrependsCollection(
                         NodeBuilder::makeArguments(...[
                             NodeBuilder::variable('this'),
+                            NodeBuilder::magicConstant('__METHOD__'),
                         ])
                     ),
-                    $method->stmts,
-                    $condition->getAppendsCollection(
-                        NodeBuilder::makeArguments(...[
-                            NodeBuilder::variable('this'),
-                        ])
-                    )
+                    [NodeBuilder::deferrable(
+                        $method->stmts,
+                        $condition->getAppendsCollection(
+                            NodeBuilder::makeArguments(...[
+                                NodeBuilder::variable('this'),
+                                NodeBuilder::magicConstant('__METHOD__'),
+                            ])
+                        )
+                    )]
                 );
             }
         }

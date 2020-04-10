@@ -85,6 +85,14 @@ class Condition
      */
     protected function injectArgumentToCollection(array $targets, $arguments)
     {
+        // Reset argument
+        foreach ($targets as $expression) {
+            /**
+             * @var Node\Stmt\Expression $expression
+             */
+            $expression->expr->args = [];
+        }
+
         return array_reduce(
             $targets,
             static function ($carry, $expression) use ($arguments) {

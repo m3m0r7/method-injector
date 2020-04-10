@@ -13,4 +13,8 @@ class TestClass
     {
         return date('Y-m-d H:i:s');
     }
+
+    public function test1()
+    {
+    }
 }

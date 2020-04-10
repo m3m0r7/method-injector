@@ -118,12 +118,37 @@ class NodeBuilder
         return new Node\Expr\Variable($name);
     }
 
+    public static function deferrable(array $stmt, array $deferrableStatement): Node
+    {
+        return new Node\Stmt\TryCatch(
+            $stmt,
+            [],
+            new Node\Stmt\Finally_(
+                $deferrableStatement
+            )
+        );
+    }
+
+    public static function magicConstant(string $name): Node
+    {
+        if ($name === '__METHOD__') {
+            return new Node\Scalar\MagicConst\Method();
+        }
+        if ($name === '__CLASS__') {
+            return new Node\Scalar\MagicConst\Class_();
+        }
+        throw new MethodInjectorException(
+            'The magic const `' . $name . '` is not supported'
+        );
+    }
+
     /**
      * @param Node ...$arguments
      * @return Node[]
      */
     public static function makeArguments(Node ...$arguments): array
     {
+        $result = [];
         foreach ($arguments as $argument) {
             $result[] = new Node\Arg(
                 $argument
