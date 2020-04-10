@@ -7,7 +7,7 @@ use PhpParser\PrettyPrinter\Standard;
 class MethodInjector
 {
     /**
-     * @var array<string, Node, string|null, array<string|array<string>>>
+     * @var array
      */
     protected $inspectors = [];
 

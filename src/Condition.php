@@ -34,7 +34,7 @@ class Condition
     {
         $this->before[] = NodeBuilder::expressible(
             NodeBuilder::callable(
-                $this->makeAnonymousFunctionEntryString(
+                $this->makeAnonymousFunctionEntryNode(
                     $process
                 )
             )
@@ -50,7 +50,7 @@ class Condition
     {
         $this->after[] = NodeBuilder::expressible(
             NodeBuilder::callable(
-                $this->makeAnonymousFunctionEntryString(
+                $this->makeAnonymousFunctionEntryNode(
                     $process
                 )
             )
@@ -111,10 +111,7 @@ class Condition
         );
     }
 
-    /**
-     * @return string
-     */
-    protected function makeAnonymousFunctionEntryString(callable $callable): Node
+    protected function makeAnonymousFunctionEntryNode(callable $callable): Node
     {
         $entryNumber = AnonymousFunctionManager::add($callable);
         return NodeBuilder::factory()
