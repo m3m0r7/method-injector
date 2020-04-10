@@ -199,7 +199,7 @@ echo $mock::TEST;
 ```
 
 ## Output something when start to process the method
-You may want to interrupt some processing at the start of the method execution. With `MethodInjector`, you can specify a `prepend` of the `Condition` class.
+You may want to interrupt some processing at the start of the method execution. With `MethodInjector`, you can specify a `before` of the `Condition` class.
 It is possible to interrupt some processing at the start of execution. For example, it is useful when you want to measure the execution time of a single method.
 
 ```php
@@ -220,7 +220,7 @@ $test
                     '*',
                     function (Condition $condition) {
                         return $condition
-                            ->prepend(function () {
+                            ->before(function () {
                                 echo "Hello HEAD!\n";
                             });
                 }
@@ -233,7 +233,7 @@ $mock = $test->createMock(Test::class);
 ```
 
 ## Output something when finish to process the method
-You can also specify the end of the method execution as well as the start. When it is finished, `append` is called.
+You can also specify the end of the method execution as well as the start. When it is finished, `after` is called.
 
 ```php
 <?php
@@ -253,7 +253,7 @@ $test
                     '*',
                     function (Condition $condition) {
                         return $condition
-                            ->append(function () {
+                            ->after(function () {
                                 echo "Finish to run.\n";
                             });
                 }
