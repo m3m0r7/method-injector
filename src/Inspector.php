@@ -176,11 +176,22 @@ class Inspector
     public function patch()
     {
         foreach ($this->ast as $inspect) {
-            foreach ($this->recursiveNode($inspect) as [$node, $namespace]) {
+            $recursiveNodes = $this->recursiveNode($inspect);
+            $aliases = [];
+
+            // Hoisting uses
+            foreach ($recursiveNodes as [$node, $namespace]) {
+                $aliases = $this->processInspectedAliases(
+                    $node,
+                    $namespace
+                );
+            }
+            foreach ($recursiveNodes as [$node, $namespace]) {
                 $this->processInspectedNode(
                     $this->className,
                     $node,
-                    $namespace
+                    $namespace,
+                    $aliases
                 );
             }
         }
@@ -211,12 +222,38 @@ class Inspector
     /**
      * @param $node
      * @param $namespace
-     * @return $this
+     */
+    protected function processInspectedAliases(
+        $node,
+        $namespace
+    ): array {
+        if (!($node instanceof Node\Stmt\Use_)) {
+            return [];
+        }
+
+        $aliases = [];
+        foreach ($node->uses as $use) {
+            if (!($use instanceof Node\Stmt\UseUse)) {
+                continue;
+            }
+            if ($use->type !== Node\Stmt\Use_::TYPE_UNKNOWN) {
+                continue;
+            }
+            $aliases[] = implode('\\', $use->name->parts);
+        }
+        return $aliases;
+    }
+
+    /**
+     * @param $node
+     * @param $namespace
+     * @param array $aliases
      */
     protected function processInspectedNode(
         string $className,
         $node,
-        $namespace
+        $namespace,
+        $aliases = []
     ): void {
         $conditions = $this->conditions;
 
