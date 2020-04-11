@@ -8,6 +8,7 @@ use MethodInjector\Replacer\FunctionReplacer;
 use MethodInjector\Replacer\InstanceReplacer;
 use MethodInjector\Replacer\MethodReplacer;
 use MethodInjector\Replacer\ReplacerInterface;
+use MethodInjector\Replacer\StaticCallReplacer;
 use MethodInjector\Traits\ReplacerAware;
 use PhpParser\Node;
 use PhpParser\ParserFactory;
@@ -21,6 +22,7 @@ class Inspector
     const CONSTANT = 3;
     const FIELD = 4;
     const INSTANCE = 5;
+    const STATIC_CALL = 5;
 
     /**
      * @var array<null|string>
@@ -132,6 +134,7 @@ class Inspector
                 [self::CONSTANT, ConstantReplacer::class],
                 [self::FIELD, FieldReplacer::class],
                 [self::INSTANCE, InstanceReplacer::class],
+                [self::STATIC_CALL, StaticCallReplacer::class],
             ];
         }
 
@@ -255,6 +258,8 @@ class Inspector
             return;
         }
 
+        var_dump($node);
+
         $classPathAndName = implode('\\', $namespace) . '\\' . $node->name->name;
         if ($className !== $classPathAndName) {
             return;
@@ -299,7 +304,9 @@ class Inspector
                      * @var Condition $condition
                      */
                     $this->patchCollectionNode(
-                        $condition->getCollection(CollectionFilter::FILTER_METHOD_REPLACER),
+                        $condition->getCollection(
+                            CollectionFilter::FILTER_METHOD_REPLACER
+                        ),
                         $stmt,
                         $namespace,
                         $aliases
