@@ -258,8 +258,6 @@ class Inspector
             return;
         }
 
-        var_dump($node);
-
         $classPathAndName = implode('\\', $namespace) . '\\' . $node->name->name;
         if ($className !== $classPathAndName) {
             return;
