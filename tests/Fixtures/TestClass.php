@@ -17,4 +17,14 @@ class TestClass
     public function test1()
     {
     }
+
+    public static function testFunction()
+    {
+        return '1234';
+    }
+
+    public function test2()
+    {
+        static::testFunction();
+    }
 }
