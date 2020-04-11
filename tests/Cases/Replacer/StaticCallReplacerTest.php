@@ -8,7 +8,7 @@ use MethodInjector\Test\Fixtures\TestClassExtendedTestClass;
 
 class StaticCallReplacerTest extends \PHPUnit\Framework\TestCase
 {
-    public function testStaticCallReplacer()
+    public function testStaticCallWithClassReplacer()
     {
         $this->assertSame(
             '1234',

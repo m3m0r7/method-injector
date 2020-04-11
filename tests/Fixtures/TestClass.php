@@ -27,4 +27,14 @@ class TestClass
     {
         static::testFunction();
     }
+
+    public function test3()
+    {
+        return new static();
+    }
+
+    public function test4()
+    {
+        return new ChildClass();
+    }
 }
