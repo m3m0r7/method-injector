@@ -181,9 +181,12 @@ class Inspector
 
             // Hoisting uses
             foreach ($recursiveNodes as [$node, $namespace]) {
-                $aliases = $this->processInspectedAliases(
-                    $node,
-                    $namespace
+                $aliases = array_merge(
+                    $aliases,
+                    $this->processInspectedAliases(
+                        $node,
+                        $namespace
+                    )
                 );
             }
             foreach ($recursiveNodes as [$node, $namespace]) {
@@ -262,6 +265,7 @@ class Inspector
                 $this->patchCollectionNode(
                     $this->getCollection([static::FIELD]),
                     $prop,
+                    $namespace,
                     $aliases
                 );
             }
@@ -272,6 +276,7 @@ class Inspector
                 $this->patchCollectionNode(
                     $this->getCollection([static::CONSTANT]),
                     $const,
+                    $namespace,
                     $aliases
                 );
             }
@@ -281,6 +286,7 @@ class Inspector
             $this->patchCollectionNode(
                 $this->getCollection([static::METHOD]),
                 $method,
+                $namespace,
                 $aliases
             );
 
@@ -295,6 +301,7 @@ class Inspector
                     $this->patchCollectionNode(
                         $condition->getCollection(CollectionFilter::FILTER_METHOD_REPLACER),
                         $stmt,
+                        $namespace,
                         $aliases
                     );
                 }
@@ -345,12 +352,12 @@ class Inspector
      * @param $from
      * @param $to
      */
-    protected function patchNode(Node $stmt, string $replacerClass, $from, $to, array $aliases = []): Node
+    protected function patchNode(Node $stmt, string $replacerClass, $from, $to, array $namespace = [], array $aliases = []): Node
     {
         /**
          * @var ReplacerInterface $replacerClass
          */
-        $replacer = $replacerClass::factory($stmt, $from, $to, $aliases);
+        $replacer = $replacerClass::factory($stmt, $from, $to, $namespace, $aliases);
         if (!($replacer instanceof ReplacerInterface)) {
             throw new MethodInjectorException(
                 '`' . $replacerClass . '` is not implementing ReplacerInterface.'
@@ -364,7 +371,7 @@ class Inspector
             ->patchNode();
     }
 
-    protected function patchCollectionNode(array $collection, Node &$node, array $aliases = []): void
+    protected function patchCollectionNode(array $collection, Node &$node, array $namespace = [], array $aliases = []): void
     {
         foreach ($collection as [$replaceType, $from, $to]) {
             foreach ($this->replacers as [$type, $replacerClass]) {
@@ -379,6 +386,7 @@ class Inspector
                     $replacerClass,
                     $from,
                     $to,
+                    $namespace,
                     $aliases
                 );
             }

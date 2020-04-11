@@ -75,8 +75,14 @@ class NodeBuilder
 
     public static function makeClassName(string $name)
     {
+        // The special class names.
+        if (in_array(strtolower($name), ['static', 'self'], true)) {
+            return new Node\Name(
+                $name
+            );
+        }
         return new Node\Name(
-            $name
+            '\\' . ltrim($name, '\\')
         );
     }
 

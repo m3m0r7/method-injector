@@ -16,6 +16,7 @@ class MethodInjector
      */
     protected $namespaceOfMockedClass = 'MethodInjector\\Mocked';
     protected $inspectorClass = Inspector::class;
+    protected $generatedCode;
 
     protected $args;
 
@@ -167,8 +168,20 @@ class MethodInjector
             $mockedClassName = '\\' . $this->namespaceOfMockedClass . '\\' . $mockedClassName;
         }
 
+        $this->generatedCode = $generatedCode;
+
         eval($generatedCode);
         return new $mockedClassName(...$arguments);
+    }
+
+    public function getGeneratedCodeTraceAsString(): string
+    {
+        if ($this->generatedCode === null) {
+            throw new MethodInjectorException(
+                'Not generated codes yet. Did you forget to run `createMock`?'
+            );
+        }
+        return (string) $this->generatedCode;
     }
 
     protected function validateInheritableClass(Node\Stmt\Class_ $node)

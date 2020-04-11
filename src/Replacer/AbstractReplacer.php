@@ -2,6 +2,7 @@
 namespace MethodInjector\Replacer;
 
 use MethodInjector\Helper\NodeFinder;
+use MethodInjector\Helper\PathResolver;
 use PhpParser\Node;
 
 abstract class AbstractReplacer implements ReplacerInterface
@@ -26,10 +27,7 @@ abstract class AbstractReplacer implements ReplacerInterface
      */
     protected $finder;
 
-    /**
-     * @var Node\Stmt\Use_[]
-     */
-    protected $aliases = [];
+    protected $pathResolver;
 
     /**
      * AbstractReplacer constructor.
@@ -37,12 +35,12 @@ abstract class AbstractReplacer implements ReplacerInterface
      * @param $to
      * @param Node\Stmt\Use_[] $aliases
      */
-    protected function __construct(Node $stmt, $from, $to, array $aliases = [])
+    protected function __construct(Node $stmt, $from, $to, array $namespace = [], array $aliases = [])
     {
         $this->stmt = $stmt;
         $this->from = $from;
         $this->to = $to;
-        $this->aliases = $aliases;
+        $this->pathResolver = PathResolver::factory($namespace, $aliases);
         $this->finder = NodeFinder::factory($stmt);
     }
 
@@ -50,9 +48,9 @@ abstract class AbstractReplacer implements ReplacerInterface
      * @param $from
      * @param $to
      */
-    public static function factory(Node $stmt, $from, $to, array $aliases = []): ReplacerInterface
+    public static function factory(Node $stmt, $from, $to, array $namespace = [], array $aliases = []): ReplacerInterface
     {
-        return new static($stmt, $from, $to, $aliases);
+        return new static($stmt, $from, $to, $namespace, $aliases);
     }
 
     abstract public function validate(): bool;

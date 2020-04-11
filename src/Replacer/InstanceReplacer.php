@@ -2,6 +2,7 @@
 namespace MethodInjector\Replacer;
 
 use MethodInjector\Helper\NodeBuilder;
+use MethodInjector\Helper\PathResolver;
 use PhpParser\Node;
 
 class InstanceReplacer extends AbstractReplacer
@@ -29,7 +30,13 @@ class InstanceReplacer extends AbstractReplacer
     {
         return function ($node) {
             return $node instanceof Node\Expr\New_
-                && implode('\\', $node->class->parts) === $this->from;
+                && $this->pathResolver
+                    ->contains(
+                        PathResolver::toStringPath(
+                            $node->class->parts
+                        ),
+                        $this->from
+                    );
         };
     }
 }
