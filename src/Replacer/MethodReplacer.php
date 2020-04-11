@@ -2,15 +2,13 @@
 namespace MethodInjector\Replacer;
 
 use MethodInjector\Helper\NodeBuilder;
+use MethodInjector\Replacer\Traits\ReplacerStandard;
 use PhpParser\Node;
 
 class MethodReplacer extends AbstractReplacer
 {
-    public function validate(): bool
-    {
-        return $this->stmt instanceof Node\Stmt\ClassMethod &&
-            $this->stmt->name->name === $this->from;
-    }
+    use ReplacerStandard;
+    protected $targetExpr = Node\Stmt\ClassMethod::class;
 
     public function patchNode(): Node
     {

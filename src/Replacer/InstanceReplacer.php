@@ -2,15 +2,13 @@
 namespace MethodInjector\Replacer;
 
 use MethodInjector\Helper\NodeBuilder;
-use MethodInjector\Helper\PathResolver;
+use MethodInjector\Replacer\Traits\ReplacerStandard;
 use PhpParser\Node;
 
 class InstanceReplacer extends AbstractReplacer
 {
-    public function validate(): bool
-    {
-        return (bool) $this->finder->find($this->finderCallback());
-    }
+    use ReplacerStandard;
+    protected $targetExpr = Node\Expr\New_::class;
 
     public function patchNode(): Node
     {
@@ -24,19 +22,5 @@ class InstanceReplacer extends AbstractReplacer
                     );
                 }
             );
-    }
-
-    protected function finderCallback(): callable
-    {
-        return function ($node) {
-            return $node instanceof Node\Expr\New_
-                && $this->pathResolver
-                    ->contains(
-                        PathResolver::toStringPath(
-                            $node->class->parts
-                        ),
-                        $this->from
-                    );
-        };
     }
 }

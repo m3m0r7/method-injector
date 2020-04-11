@@ -1,37 +1,39 @@
 <?php declare(strict_types=1);
 namespace MethodInjector\Replacer;
 
+use MethodInjector\Helper\PathResolver;
 use PhpParser\Node;
 
 class FunctionReplacer extends AbstractReplacer
 {
     public function validate(): bool
     {
-        $expression = $this->stmt->expr ?? null;
-        if (!($expression instanceof Node\Expr\FuncCall)) {
-            return false;
-        }
-        return implode('\\', $expression->name->parts ?? []) === $this->from;
+        return (bool) $this->finder->find($this->finderCallback());
     }
 
     public function patchNode(): Node
     {
-        /**
-         * @var Node\Stmt\Expression $stmt
-         * @var Node\Expr\FuncCall $expr
-         */
-        $stmt = $this->stmt;
-        $expr = $stmt->expr;
+        return $this
+            ->finder
+            ->patch(
+                $this->finderCallback(),
+                function (Node\Expr\FuncCall $node) {
+                    $node->name = $this->to;
+                }
+            );
+    }
 
-        $originalAttribute = $expr->name->getAttributes();
-        if (is_string($this->to)) {
-            $expr->name->parts = '\\' . explode('\\', $this->to);
-        } elseif ($this->to instanceof Node) {
-            /**
-             * @var Node\Expr\StaticCall $anonymous
-             */
-            $expr->name = $this->to;
-        }
-        return $stmt;
+    protected function finderCallback(): callable
+    {
+        return function ($node) {
+            return $node instanceof Node\Expr\FuncCall
+                && $this->pathResolver
+                    ->contains(
+                        PathResolver::toStringPath(
+                            $node->name->parts
+                        ),
+                        $this->from
+                    );
+        };
     }
 }
