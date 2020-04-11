@@ -5,7 +5,7 @@ use PhpParser\Node;
 
 interface ReplacerInterface
 {
-    public static function factory(Node $stmt, $from, $to): ReplacerInterface;
+    public static function factory(Node $stmt, $from, $to, array $aliases = []): ReplacerInterface;
 
     public function validate(): bool;
 

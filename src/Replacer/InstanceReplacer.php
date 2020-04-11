@@ -8,19 +8,28 @@ class InstanceReplacer extends AbstractReplacer
 {
     public function validate(): bool
     {
-        return $this->stmt->expr->expr instanceof Node\Expr\New_ &&
-            implode('\\', $this->stmt->expr->expr->class->parts) === $this->from;
+        return (bool) $this->finder->find($this->finderCallback());
     }
 
     public function patchNode(): Node
     {
-        /**
-         * @var Node\Expr\New_ $new
-         */
-        $this->stmt->expr->expr->class = NodeBuilder::makeClassName(
-            $this->to->value
-        );
+        return $this
+            ->finder
+            ->patch(
+                $this->finderCallback(),
+                function (Node $node) {
+                    $node->class = NodeBuilder::makeClassName(
+                        $this->to->value
+                    );
+                }
+            );
+    }
 
-        return $this->stmt;
+    protected function finderCallback(): callable
+    {
+        return function ($node) {
+            return $node instanceof Node\Expr\New_
+                && implode('\\', $node->class->parts) === $this->from;
+        };
     }
 }

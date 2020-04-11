@@ -230,30 +230,18 @@ class Inspector
         if (!($node instanceof Node\Stmt\Use_)) {
             return [];
         }
-
-        $aliases = [];
-        foreach ($node->uses as $use) {
-            if (!($use instanceof Node\Stmt\UseUse)) {
-                continue;
-            }
-            if ($use->type !== Node\Stmt\Use_::TYPE_UNKNOWN) {
-                continue;
-            }
-            $aliases[] = implode('\\', $use->name->parts);
-        }
-        return $aliases;
+        return $node->uses;
     }
 
     /**
      * @param $node
      * @param $namespace
-     * @param array $aliases
      */
     protected function processInspectedNode(
         string $className,
         $node,
         $namespace,
-        $aliases = []
+        array $aliases = []
     ): void {
         $conditions = $this->conditions;
 
@@ -273,7 +261,8 @@ class Inspector
             foreach ($property->props as &$prop) {
                 $this->patchCollectionNode(
                     $this->getCollection([static::FIELD]),
-                    $prop
+                    $prop,
+                    $aliases
                 );
             }
         }
@@ -282,7 +271,8 @@ class Inspector
             foreach ($constant->consts as &$const) {
                 $this->patchCollectionNode(
                     $this->getCollection([static::CONSTANT]),
-                    $const
+                    $const,
+                    $aliases
                 );
             }
         }
@@ -290,7 +280,8 @@ class Inspector
         foreach ($node->getMethods() as &$method) {
             $this->patchCollectionNode(
                 $this->getCollection([static::METHOD]),
-                $method
+                $method,
+                $aliases
             );
 
             foreach ($conditions as $name => $condition) {
@@ -303,7 +294,8 @@ class Inspector
                      */
                     $this->patchCollectionNode(
                         $condition->getCollection(CollectionFilter::FILTER_METHOD_REPLACER),
-                        $stmt
+                        $stmt,
+                        $aliases
                     );
                 }
 
@@ -353,12 +345,12 @@ class Inspector
      * @param $from
      * @param $to
      */
-    protected function patchNode(Node $stmt, string $replacerClass, $from, $to): Node
+    protected function patchNode(Node $stmt, string $replacerClass, $from, $to, array $aliases = []): Node
     {
         /**
          * @var ReplacerInterface $replacerClass
          */
-        $replacer = $replacerClass::factory($stmt, $from, $to);
+        $replacer = $replacerClass::factory($stmt, $from, $to, $aliases);
         if (!($replacer instanceof ReplacerInterface)) {
             throw new MethodInjectorException(
                 '`' . $replacerClass . '` is not implementing ReplacerInterface.'
@@ -372,7 +364,7 @@ class Inspector
             ->patchNode();
     }
 
-    protected function patchCollectionNode(array $collection, Node &$node): void
+    protected function patchCollectionNode(array $collection, Node &$node, array $aliases = []): void
     {
         foreach ($collection as [$replaceType, $from, $to]) {
             foreach ($this->replacers as [$type, $replacerClass]) {
@@ -382,7 +374,13 @@ class Inspector
                 if ($replacerClass === null) {
                     throw new MethodInjectorException('Not supported replace type.');
                 }
-                $node = $this->patchNode($node, $replacerClass, $from, $to);
+                $node = $this->patchNode(
+                    $node,
+                    $replacerClass,
+                    $from,
+                    $to,
+                    $aliases
+                );
             }
         }
     }
