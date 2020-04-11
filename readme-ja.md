@@ -267,6 +267,75 @@ $test
 $mock = $test->createMock(Test::class);
 ```
 
+## メソッド内のクラスを置き換える
+`MethodInjector` はメソッド内でインスタンス化されているクラスを `replaceInstance` を用いて別のクラスに置き換えることも可能です。
+これによりまだ開発途中であったり、別のクラスに差し替えたいというようなユースケースにも対応可能です。
+他にも `static` や `self` などで読んでいる場合でも差し替えることが可能です。
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MethodInjector\Condition;
+use MethodInjector\Inspector;
+use MethodInjector\MethodInjector;
+
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->methodGroup(
+                    '*',
+                    function (Condition $condition) {
+                        return $condition
+                            ->replaceInstance(
+                                Foo::class,
+                                Bar::class
+                            );
+                }
+            );
+        }
+    )
+    ->patch();
+
+$mock = $test->createMock(Test::class);
+```
+
+もちろんクラスの静的なメソッドを読んでいるような箇所でも `replaceStaticCall` を利用することにより下記のように置き換えられます。
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MethodInjector\Condition;
+use MethodInjector\Inspector;
+use MethodInjector\MethodInjector;
+
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->methodGroup(
+                    '*',
+                    function (Condition $condition) {
+                        return $condition
+                            ->replaceStaticCall(
+                                Foo::class,
+                                Bar::class
+                            );
+                }
+            );
+        }
+    )
+    ->patch();
+
+$mock = $test->createMock(Test::class);
+```
+
 ## メソッドをモック化する
 メソッドそのものが開発途中であったり、一定の値を返したテストを行いたい、テストの関心事の範囲外である場合などでテストダブルを作成したいこともあるでしょう。
 `MethodInjector` では `replaceMethod` を使用してメソッドそのもののテストダブルを作成することも可能です。

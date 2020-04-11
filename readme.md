@@ -265,6 +265,76 @@ $test
 $mock = $test->createMock(Test::class);
 ```
 
+## Replace classes in the method
+The `MethodInjector` can also replace a class that is instantiated in a method with another class using `replaceInstance`.
+This allows for use cases that are still under development, or where you want to replace a class with another one.
+It is also possible to replace it when reading with `static` or `self`.
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MethodInjector\Condition;
+use MethodInjector\Inspector;
+use MethodInjector\MethodInjector;
+
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->methodGroup(
+                    '*',
+                    function (Condition $condition) {
+                        return $condition
+                            ->replaceInstance(
+                                Foo::class,
+                                Bar::class
+                            );
+                }
+            );
+        }
+    )
+    ->patch();
+
+$mock = $test->createMock(Test::class);
+```
+
+Of course, even if you are reading a static method of a class, you can use `replaceStaticCall` to replace it with the following.
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MethodInjector\Condition;
+use MethodInjector\Inspector;
+use MethodInjector\MethodInjector;
+
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->methodGroup(
+                    '*',
+                    function (Condition $condition) {
+                        return $condition
+                            ->replaceStaticCall(
+                                Foo::class,
+                                Bar::class
+                            );
+                }
+            );
+        }
+    )
+    ->patch();
+
+$mock = $test->createMock(Test::class);
+```
+
+
 ## Mocking the method
 You may want to create a test double when the method itself is in development, or when you want to test a test that returns a certain value, or when it is outside the scope of your testing interests.
 With `MethodInjector` it is also possible to create a test double for the method itself using `replaceMethod`.
