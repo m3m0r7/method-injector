@@ -41,6 +41,20 @@ class Condition
     }
 
     /**
+     * @param $from
+     * @param $to
+     * @return $this
+     */
+    public function replaceStaticCall($from, $to): self
+    {
+        return $this->replace(
+            Inspector::STATIC_CALL,
+            $from,
+            $to
+        );
+    }
+
+    /**
      * @param $process
      * @return $this
      */

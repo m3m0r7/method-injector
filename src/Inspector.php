@@ -22,7 +22,7 @@ class Inspector
     const CONSTANT = 3;
     const FIELD = 4;
     const INSTANCE = 5;
-    const STATIC_CALL = 5;
+    const STATIC_CALL = 6;
 
     /**
      * @var array<null|string>
