@@ -25,7 +25,7 @@ class TestClass
 
     public function test2()
     {
-        static::testFunction();
+        return static::testFunction();
     }
 
     public function test3()

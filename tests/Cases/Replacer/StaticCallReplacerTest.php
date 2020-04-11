@@ -18,7 +18,7 @@ class StaticCallReplacerTest extends \PHPUnit\Framework\TestCase
         $test = \MethodInjector\MethodInjector::factory();
         $test
             ->inspect(
-                TestClassExtendedTestClass::class,
+                TestClass::class,
                 function (Inspector $inspector) {
                     return $inspector
                         ->methodGroup(
@@ -27,7 +27,7 @@ class StaticCallReplacerTest extends \PHPUnit\Framework\TestCase
                                 return $condition
                                     ->replaceStaticCall(
                                         'static',
-                                        'TestClass'
+                                        TestClassExtendedTestClass::class
                                     );
                             }
                         );
@@ -35,11 +35,11 @@ class StaticCallReplacerTest extends \PHPUnit\Framework\TestCase
             )
             ->patch();
 
-        $mock = $test->createMock(TestClassExtendedTestClass::class);
+        $mock = $test->createMock(TestClass::class);
 
         $this->assertSame(
             '9876',
-            $mock::testFunction()
+            $mock->test2()
         );
     }
 }
