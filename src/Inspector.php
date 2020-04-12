@@ -126,6 +126,14 @@ class Inspector
      */
     protected function __construct(array $args, string $className, bool $inheritOriginalClass = false)
     {
+        static $parser;
+
+        if (!$this->validateUserDefinedClass($className)) {
+            throw new MethodInjectorException(
+                'The specified class is not a user defined.'
+            );
+        }
+
         if (isset($args['replacer'])) {
             $this->replacers = $args['replacer'];
         } else {
@@ -141,7 +149,7 @@ class Inspector
             ];
         }
 
-        $this->parser = (new ParserFactory())
+        $this->parser = $parser ?? (new ParserFactory())
             ->create(ParserFactory::PREFER_PHP7);
 
         $reflection = new \ReflectionClass($className);
@@ -435,6 +443,16 @@ class Inspector
                 $namespace,
                 $names
             )
+        );
+    }
+
+    protected function validateUserDefinedClass(string $className): bool
+    {
+        $userDefined = get_declared_classes();
+        return in_array(
+            $className,
+            $userDefined,
+            true
         );
     }
 }
