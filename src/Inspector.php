@@ -66,6 +66,14 @@ class Inspector
      */
     protected $attributes;
 
+    protected $enableParentMock = false;
+
+    protected $expandTrait = false;
+
+    protected $inheritOriginalClass = false;
+
+    protected $args = [];
+
     public static function factory(array $args, string $className, bool $inheritOriginalClass = false)
     {
         return new static(
@@ -139,6 +147,9 @@ class Inspector
             );
         }
 
+        $this->args = $args;
+        $this->inheritOriginalClass = $inheritOriginalClass;
+
         if (isset($args['replacer'])) {
             $this->replacers = $args['replacer'];
         } else {
@@ -195,7 +206,19 @@ class Inspector
      */
     public function methodGroup(string $condition, callable $callback): self
     {
-        $this->conditions[$condition] = $callback(new Condition());
+        $this->conditions[$condition] = $callback;
+        return $this;
+    }
+
+    public function enableParentMock(bool $which): self
+    {
+        $this->enableParentMock = $which;
+        return $this;
+    }
+
+    public function expandTraits(bool $which): self
+    {
+        $this->expandTrait = $which;
         return $this;
     }
 
@@ -272,9 +295,29 @@ class Inspector
             return;
         }
 
-        $classPathAndName = implode('\\', $this->namespace) . '\\' . $node->name->name;
-        if ($className !== $classPathAndName) {
+        $classPathAndName = $this->combinePath(
+            $this->namespace,
+            [$node->name->name]
+        );
+
+        if ($className !== ltrim($classPathAndName, '\\')) {
             return;
+        }
+
+        // if enable parent mock?
+        if ($this->enableParentMock && $node->extends !== null) {
+            var_dump($this->enableParentMock, $node->extends);
+
+            $extendedClassPath = $this->combinePath(
+                $this->namespace,
+                $node->extends->parts
+            );
+
+            $result = $this->getMethodsOfExtendedClasses(
+                $extendedClassPath
+            );
+
+//            var_dump($result);
         }
 
         foreach ($node->getProperties() as &$property) {
@@ -413,6 +456,27 @@ class Inspector
                 );
             }
         }
+    }
+
+    protected function getMethodsOfExtendedClasses(string $class)
+    {
+        $inspector = static::factory(
+            $this->args,
+            ltrim($class, '\\'),
+            $this->inheritOriginalClass
+        );
+        foreach ($this->conditions as $name => $condition) {
+            $inspector->methodGroup(
+                $name,
+                $condition
+            );
+        }
+        $inspector
+            ->enableParentMock(true)
+            ->expandTraits(true)
+            ->patch();
+
+        return $inspector->mockedNode;
     }
 
     protected function recursiveNode(Node $node): array
