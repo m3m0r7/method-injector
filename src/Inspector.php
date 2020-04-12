@@ -59,6 +59,11 @@ class Inspector
     /**
      * @var array
      */
+    protected $namespace;
+
+    /**
+     * @var array
+     */
     protected $attributes;
 
     public static function factory(array $args, string $className, bool $inheritOriginalClass = false)
@@ -153,6 +158,13 @@ class Inspector
             ->create(ParserFactory::PREFER_PHP7);
 
         $reflection = new \ReflectionClass($className);
+
+        if ($reflection->getFileName() === false) {
+            throw new MethodInjectorException(
+                'Cannot get declared file. The MethodInjector cannot create a mock with built-in classes.'
+            );
+        }
+
         $filePath = file_get_contents(
             $reflection->getFileName()
         );
@@ -194,20 +206,16 @@ class Inspector
             $aliases = [];
 
             // Hoisting uses
-            foreach ($recursiveNodes as [$node, $namespace]) {
+            foreach ($recursiveNodes as $node) {
                 $aliases = array_merge(
                     $aliases,
-                    $this->processInspectedAliases(
-                        $node,
-                        $namespace
-                    )
+                    $this->processInspectedAliases($node)
                 );
             }
-            foreach ($recursiveNodes as [$node, $namespace]) {
+            foreach ($recursiveNodes as $node) {
                 $this->processInspectedNode(
                     $this->className,
                     $node,
-                    $namespace,
                     $aliases
                 );
             }
@@ -238,12 +246,9 @@ class Inspector
 
     /**
      * @param $node
-     * @param $namespace
      */
-    protected function processInspectedAliases(
-        $node,
-        $namespace
-    ): array {
+    protected function processInspectedAliases($node): array
+    {
         if (!($node instanceof Node\Stmt\Use_)) {
             return [];
         }
@@ -252,12 +257,10 @@ class Inspector
 
     /**
      * @param $node
-     * @param $namespace
      */
     protected function processInspectedNode(
         string $className,
         $node,
-        $namespace,
         array $aliases = []
     ): void {
         $conditions = $this->conditions;
@@ -269,7 +272,7 @@ class Inspector
             return;
         }
 
-        $classPathAndName = implode('\\', $namespace) . '\\' . $node->name->name;
+        $classPathAndName = implode('\\', $this->namespace) . '\\' . $node->name->name;
         if ($className !== $classPathAndName) {
             return;
         }
@@ -279,7 +282,6 @@ class Inspector
                 $this->patchCollectionNode(
                     $this->getCollection([static::FIELD]),
                     $prop,
-                    $namespace,
                     $aliases
                 );
             }
@@ -290,7 +292,6 @@ class Inspector
                 $this->patchCollectionNode(
                     $this->getCollection([static::CLASS_CONSTANT]),
                     $const,
-                    $namespace,
                     $aliases
                 );
             }
@@ -300,7 +301,6 @@ class Inspector
             $this->patchCollectionNode(
                 $this->getCollection([static::METHOD]),
                 $method,
-                $namespace,
                 $aliases
             );
 
@@ -317,7 +317,6 @@ class Inspector
                             CollectionFilter::FILTER_METHOD_REPLACER
                         ),
                         $stmt,
-                        $namespace,
                         $aliases
                     );
                 }
@@ -346,15 +345,15 @@ class Inspector
         $inspects = null;
         $this->attributes['extends'] = ($node->extends->parts ?? null)
             ? $this->combinePath(
-                $namespace,
+                $this->namespace,
                 $node->extends->parts
             )
             : null;
 
         $this->attributes['implements'] = array_map(
-            function ($implement) use ($namespace) {
+            function ($implement) {
                 return $this->combinePath(
-                    $namespace,
+                    $this->namespace,
                     $implement->parts
                 );
             },
@@ -364,16 +363,24 @@ class Inspector
         $this->mockedNode = $node;
     }
 
+    public function getNamespace(): ?string
+    {
+        if (empty($this->namespace)) {
+            return null;
+        }
+        return implode('\\', $this->namespace);
+    }
+
     /**
      * @param $from
      * @param $to
      */
-    protected function patchNode(Node $stmt, string $replacerClass, $from, $to, array $namespace = [], array $aliases = []): Node
+    protected function patchNode(Node $stmt, string $replacerClass, $from, $to, array $aliases = []): Node
     {
         /**
          * @var ReplacerInterface $replacerClass
          */
-        $replacer = $replacerClass::factory($stmt, $from, $to, $namespace, $aliases);
+        $replacer = $replacerClass::factory($stmt, $from, $to, $this->namespace, $aliases);
         if (!($replacer instanceof ReplacerInterface)) {
             throw new MethodInjectorException(
                 '`' . $replacerClass . '` is not implementing ReplacerInterface.'
@@ -387,7 +394,7 @@ class Inspector
             ->patchNode();
     }
 
-    protected function patchCollectionNode(array $collection, Node &$node, array $namespace = [], array $aliases = []): void
+    protected function patchCollectionNode(array $collection, Node &$node, array $aliases = []): void
     {
         foreach ($collection as [$replaceType, $from, $to]) {
             foreach ($this->replacers as [$type, $replacerClass]) {
@@ -402,30 +409,26 @@ class Inspector
                     $replacerClass,
                     $from,
                     $to,
-                    $namespace,
                     $aliases
                 );
             }
         }
     }
 
-    protected function recursiveNode(Node $node, array $namespace = []): array
+    protected function recursiveNode(Node $node): array
     {
         if ($node instanceof Node\Stmt\Namespace_) {
-            $namespace = $node->name->parts;
+            $this->namespace = $node->name->parts;
             $nodes = [];
             foreach ($node->stmts as $stmt) {
                 $nodes = array_merge(
                     $nodes,
-                    $this->recursiveNode(
-                        $stmt,
-                        $namespace
-                    )
+                    $this->recursiveNode($stmt)
                 );
             }
             return $nodes;
         }
-        return [[$node, $namespace]];
+        return [$node];
     }
 
     protected function makeMockedClassName(string $originalClassName): string
@@ -448,11 +451,8 @@ class Inspector
 
     protected function validateUserDefinedClass(string $className): bool
     {
-        $userDefined = get_declared_classes();
-        return in_array(
-            $className,
-            $userDefined,
-            true
+        return class_exists(
+            $className
         );
     }
 }

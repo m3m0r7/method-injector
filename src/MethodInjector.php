@@ -11,10 +11,6 @@ class MethodInjector
      */
     protected $inspectors = [];
 
-    /**
-     * @var null|string
-     */
-    protected $namespaceOfMockedClass = 'MethodInjector\\Mocked';
     protected $inspectorClass = Inspector::class;
     protected $generatedCode;
 
@@ -163,9 +159,9 @@ class MethodInjector
             . $mockedCode
             . '}';
 
-        if ($this->namespaceOfMockedClass !== null) {
-            $generatedCode = 'namespace ' . $this->namespaceOfMockedClass . ' {' . $generatedCode . '}';
-            $mockedClassName = '\\' . $this->namespaceOfMockedClass . '\\' . $mockedClassName;
+        if ($inspector->getNamespace() !== null) {
+            $generatedCode = 'namespace ' . $inspector->getNamespace() . ' {' . $generatedCode . '}';
+            $mockedClassName = '\\' . $inspector->getNamespace() . '\\' . $mockedClassName;
         }
 
         $this->generatedCode = $generatedCode;

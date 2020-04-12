@@ -1,7 +1,9 @@
 <?php
 namespace MethodInjector\Test\Cases\Inspector;
 
+use HogePero\Test;
 use MethodInjector\Inspector;
+use MethodInjector\MethodInjectorException;
 use MethodInjector\Test\Fixtures\TestClass;
 use MethodInjector\Test\Fixtures\TestClassExtendedTestClass;
 use MethodInjector\Test\Fixtures\TestImplementedTestInterface;
@@ -24,7 +26,7 @@ class InspectorTest extends \PHPUnit\Framework\TestCase
         $mock = $test->createMock(TestClass::class);
 
         $this->assertMatchesRegularExpression(
-            '/MethodInjector\\\\Mocked\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClass_\d+__/',
+            '/MethodInjector\\\\Test\\\\Fixtures\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClass_\d+__/',
             get_class($mock)
         );
     }
@@ -45,7 +47,7 @@ class InspectorTest extends \PHPUnit\Framework\TestCase
         $mock = $test->createMock(TestClass::class);
 
         $this->assertMatchesRegularExpression(
-            '/MethodInjector\\\\Mocked\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClass_\d+__/',
+            '/MethodInjector\\\\Test\\\\Fixtures\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClass_\d+__/',
             get_class($mock)
         );
 
@@ -71,7 +73,7 @@ class InspectorTest extends \PHPUnit\Framework\TestCase
         $mock = $test->createMock(TestClassExtendedTestClass::class);
 
         $this->assertMatchesRegularExpression(
-            '/MethodInjector\\\\Mocked\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClassExtendedTestClass_\d+__/',
+            '/MethodInjector\\\\Test\\\\Fixtures\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClassExtendedTestClass_\d+__/',
             get_class($mock)
         );
 
@@ -101,7 +103,7 @@ class InspectorTest extends \PHPUnit\Framework\TestCase
         $mock = $test->createMock(TestClassExtendedTestClass::class);
 
         $this->assertMatchesRegularExpression(
-            '/MethodInjector\\\\Mocked\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClassExtendedTestClass_\d+__/',
+            '/MethodInjector\\\\Test\\\\Fixtures\\\\__MOCKED__MethodInjector__Test__Fixtures__TestClassExtendedTestClass_\d+__/',
             get_class($mock)
         );
 
@@ -132,7 +134,7 @@ class InspectorTest extends \PHPUnit\Framework\TestCase
         $mock = $test->createMock(TestImplementedTestInterface::class);
 
         $this->assertMatchesRegularExpression(
-            '/MethodInjector\\\\Mocked\\\\__MOCKED__MethodInjector__Test__Fixtures__TestImplementedTestInterface_\d+__/',
+            '/MethodInjector\\\\Test\\\\Fixtures\\\\__MOCKED__MethodInjector__Test__Fixtures__TestImplementedTestInterface_\d+__/',
             get_class($mock)
         );
 
@@ -145,5 +147,22 @@ class InspectorTest extends \PHPUnit\Framework\TestCase
             TestInterface::class,
             $mock
         );
+    }
+
+    public function testRestrictedToDeclareWithBuildInClasses()
+    {
+        $this->expectException(MethodInjectorException::class);
+        $test = \MethodInjector\MethodInjector::factory();
+        $test
+            ->inspect(
+                Test::class,
+                function (Inspector $inspector) {
+                    return $inspector;
+                },
+                true
+            )
+            ->patch();
+
+        $mock = $test->createMock(Test::class);
     }
 }
