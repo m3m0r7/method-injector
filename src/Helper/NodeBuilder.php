@@ -86,6 +86,13 @@ class NodeBuilder
         );
     }
 
+    public static function makeConstantName(string $name)
+    {
+        return new Node\Name(
+            '\\' . ltrim($name, '\\')
+        );
+    }
+
     /**
      * @param $text
      * @return Node

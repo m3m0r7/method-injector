@@ -382,7 +382,7 @@ use MethodInjector\MethodInjector;
 $test = \MethodInjector\MethodInjector::factory([
     'replacer' => [
         [Inspector::FUNCTION, MyFunctionReplacer::class],
-        [Inspector::CONSTANT, MyConstantReplacer::class],
+        [Inspector::CLASS_CONSTANT, MyConstantReplacer::class],
     ],
 ]);
 $test
@@ -421,7 +421,7 @@ $test
         function (Inspector $inspector) {
             return $inspector
                 ->addReplacer(Inspector::FUNCTION, MyFunctionReplacer::class)
-                ->addReplacer(Inspector::CONSTANT, MyConstantReplacer::class);
+                ->addReplacer(Inspector::CLASS_CONSTANT, MyConstantReplacer::class);
         }
     )
     ->patch();
@@ -448,7 +448,7 @@ $test
         function (Inspector $inspector) {
             return $inspector
                 ->addReplacer(Inspector::FUNCTION, MyFunctionReplacer::class)
-                ->addReplacer(Inspector::CONSTANT, MyConstantReplacer::class);
+                ->addReplacer(Inspector::CLASS_CONSTANT, MyConstantReplacer::class);
         }
     )
     ->patch();

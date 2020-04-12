@@ -9,10 +9,11 @@ class CollectionFilter
         Inspector::FUNCTION,
         Inspector::INSTANCE,
         Inspector::STATIC_CALL,
+        Inspector::CONSTANT,
     ];
 
     const FILTER_CLASS_REPLACER = [
-        Inspector::CONSTANT,
+        Inspector::CLASS_CONSTANT,
         Inspector::FIELD,
         Inspector::METHOD,
     ];

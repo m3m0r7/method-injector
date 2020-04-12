@@ -32,9 +32,17 @@ trait ReplacerStandard
                     $node->class->parts
                 );
             }
+            if ($node->class instanceof Node\Identifier) {
+                return $node->class->name;
+            }
         }
         if ($node->name instanceof Node\Identifier) {
             return $node->name->name;
+        }
+        if ($node->name instanceof Node\Name) {
+            return PathResolver::toStringPath(
+                $node->name->parts
+            );
         }
 
         throw new MethodInjectorException(

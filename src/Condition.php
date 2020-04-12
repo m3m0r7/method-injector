@@ -55,6 +55,20 @@ class Condition
     }
 
     /**
+     * @param $from
+     * @param $to
+     * @return $this
+     */
+    public function replaceConstant($from, $to): self
+    {
+        return $this->replace(
+            Inspector::CONSTANT,
+            $from,
+            $to
+        );
+    }
+
+    /**
      * @param $process
      * @return $this
      */

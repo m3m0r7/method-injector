@@ -1,23 +1,26 @@
 <?php declare(strict_types=1);
 namespace MethodInjector\Replacer;
 
+use MethodInjector\Helper\NodeBuilder;
+use MethodInjector\Replacer\Traits\ReplacerStandard;
 use PhpParser\Node;
 
 class ConstantReplacer extends AbstractReplacer
 {
-    public function validate(): bool
-    {
-        return $this->stmt instanceof Node\Const_ &&
-            $this->stmt->name->name === $this->from;
-    }
+    use ReplacerStandard;
+    protected $targetExpr = Node\Expr\ConstFetch::class;
 
     public function patchNode(): Node
     {
-        /**
-         * @var Node\Const_ $stmt
-         */
-        $stmt = $this->stmt;
-        $stmt->value = $this->to;
-        return $stmt;
+        return $this
+            ->finder
+            ->patch(
+                $this->finderCallback(),
+                function (Node $node) {
+                    $node->name = NodeBuilder::makeConstantName(
+                        $this->to->value
+                    );
+                }
+            );
     }
 }

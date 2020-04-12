@@ -2,6 +2,7 @@
 namespace MethodInjector;
 
 use MethodInjector\Helper\NodeBuilder;
+use MethodInjector\Replacer\ClassConstantReplacer;
 use MethodInjector\Replacer\ConstantReplacer;
 use MethodInjector\Replacer\FieldReplacer;
 use MethodInjector\Replacer\FunctionReplacer;
@@ -19,10 +20,11 @@ class Inspector
 
     const FUNCTION = 1;
     const METHOD = 2;
-    const CONSTANT = 3;
+    const CLASS_CONSTANT = 3;
     const FIELD = 4;
     const INSTANCE = 5;
     const STATIC_CALL = 6;
+    const CONSTANT = 7;
 
     /**
      * @var array<null|string>
@@ -104,7 +106,7 @@ class Inspector
     public function replaceConstant($from, $to): self
     {
         return $this->replace(
-            Inspector::CONSTANT,
+            Inspector::CLASS_CONSTANT,
             $from,
             $to
         );
@@ -131,10 +133,11 @@ class Inspector
             $this->replacers = [
                 [self::FUNCTION, FunctionReplacer::class],
                 [self::METHOD, MethodReplacer::class],
-                [self::CONSTANT, ConstantReplacer::class],
+                [self::CLASS_CONSTANT, ClassConstantReplacer::class],
                 [self::FIELD, FieldReplacer::class],
                 [self::INSTANCE, InstanceReplacer::class],
                 [self::STATIC_CALL, StaticCallReplacer::class],
+                [self::CONSTANT, ConstantReplacer::class],
             ];
         }
 
@@ -277,7 +280,7 @@ class Inspector
         foreach ($node->getConstants() as &$constant) {
             foreach ($constant->consts as &$const) {
                 $this->patchCollectionNode(
-                    $this->getCollection([static::CONSTANT]),
+                    $this->getCollection([static::CLASS_CONSTANT]),
                     $const,
                     $namespace,
                     $aliases
