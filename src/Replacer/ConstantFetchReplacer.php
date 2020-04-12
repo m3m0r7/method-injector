@@ -5,7 +5,7 @@ use MethodInjector\Helper\NodeBuilder;
 use MethodInjector\Replacer\Traits\ReplacerStandard;
 use PhpParser\Node;
 
-class ConstantReplacer extends AbstractReplacer
+class ConstantFetchReplacer extends AbstractReplacer
 {
     use ReplacerStandard;
     protected $targetExpr = Node\Expr\ConstFetch::class;

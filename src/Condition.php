@@ -59,10 +59,10 @@ class Condition
      * @param $to
      * @return $this
      */
-    public function replaceConstant($from, $to): self
+    public function replaceConstantFetch($from, $to): self
     {
         return $this->replace(
-            Inspector::CONSTANT,
+            Inspector::CONSTANT_FETCH,
             $from,
             $to
         );

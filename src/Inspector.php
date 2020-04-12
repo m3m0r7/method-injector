@@ -3,7 +3,7 @@ namespace MethodInjector;
 
 use MethodInjector\Helper\NodeBuilder;
 use MethodInjector\Replacer\ClassConstantReplacer;
-use MethodInjector\Replacer\ConstantReplacer;
+use MethodInjector\Replacer\ConstantFetchReplacer;
 use MethodInjector\Replacer\FieldReplacer;
 use MethodInjector\Replacer\FunctionReplacer;
 use MethodInjector\Replacer\InstanceReplacer;
@@ -24,7 +24,7 @@ class Inspector
     const FIELD = 4;
     const INSTANCE = 5;
     const STATIC_CALL = 6;
-    const CONSTANT = 7;
+    const CONSTANT_FETCH = 7;
 
     /**
      * @var array<null|string>
@@ -137,7 +137,7 @@ class Inspector
                 [self::FIELD, FieldReplacer::class],
                 [self::INSTANCE, InstanceReplacer::class],
                 [self::STATIC_CALL, StaticCallReplacer::class],
-                [self::CONSTANT, ConstantReplacer::class],
+                [self::CONSTANT_FETCH, ConstantFetchReplacer::class],
             ];
         }
 
