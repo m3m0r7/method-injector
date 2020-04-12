@@ -4,7 +4,7 @@ namespace MethodInjector\Test\Cases\Replacer;
 use MethodInjector\Inspector;
 use MethodInjector\Test\Fixtures\TestClass;
 
-class ConstantReplacerTest extends \PHPUnit\Framework\TestCase
+class ClassConstantReplacerTest extends \PHPUnit\Framework\TestCase
 {
     public function testConstantReplacer()
     {
