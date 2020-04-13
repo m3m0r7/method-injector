@@ -576,9 +576,9 @@ class Inspector
     protected function containsClassMethod(Node\Stmt\ClassMethod $needle, array $haystack): bool
     {
         foreach ($haystack as $classMethod) {
-            /**
-             * @var Node\Stmt\ClassMethod $classMethod
-             */
+            if (!($classMethod instanceof Node\Stmt\ClassMethod)) {
+                continue;
+            }
             if ($needle->name->name === $classMethod->name->name) {
                 return true;
             }
