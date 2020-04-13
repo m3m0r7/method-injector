@@ -306,8 +306,6 @@ class Inspector
 
         // if enable parent mock?
         if ($this->enableParentMock && $node->extends !== null) {
-            var_dump($this->enableParentMock, $node->extends);
-
             $extendedClassPath = $this->combinePath(
                 $this->namespace,
                 $node->extends->parts
@@ -316,8 +314,6 @@ class Inspector
             $result = $this->getMethodsOfExtendedClasses(
                 $extendedClassPath
             );
-
-//            var_dump($result);
         }
 
         foreach ($node->getProperties() as &$property) {
@@ -351,6 +347,9 @@ class Inspector
                 if ($name !== '*' && $method->name->name !== $name) {
                     continue;
                 }
+
+                // Make a condition.
+                $condition = $condition(new Condition());
                 foreach ($method->stmts as &$stmt) {
                     /**
                      * @var Condition $condition
@@ -458,6 +457,14 @@ class Inspector
         }
     }
 
+    public function __debugInfo()
+    {
+        return [
+            'className' => $this->className,
+            'patched' => (bool) $this->mockedNode,
+        ];
+    }
+
     protected function getMethodsOfExtendedClasses(string $class)
     {
         $inspector = static::factory(
@@ -465,6 +472,7 @@ class Inspector
             ltrim($class, '\\'),
             $this->inheritOriginalClass
         );
+
         foreach ($this->conditions as $name => $condition) {
             $inspector->methodGroup(
                 $name,
@@ -472,11 +480,11 @@ class Inspector
             );
         }
         $inspector
-            ->enableParentMock(true)
-            ->expandTraits(true)
+            ->enableParentMock($this->enableParentMock)
+            ->expandTraits($this->expandTrait)
             ->patch();
 
-        return $inspector->mockedNode;
+        return $inspector;
     }
 
     protected function recursiveNode(Node $node): array
