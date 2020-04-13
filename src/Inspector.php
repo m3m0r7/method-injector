@@ -387,6 +387,20 @@ class Inspector
             }
         }
 
+        // Prepend method nodes.
+        foreach ($extendedClasses as $extendedClassInspector) {
+            $mockedNode = $extendedClassInspector->getMockedNode();
+            foreach ($mockedNode->getMethods() as $method) {
+                if ($this->containsClassMethod($method, $node->getMethods())) {
+                    continue;
+                }
+                array_unshift(
+                    $node->stmts,
+                    $method
+                );
+            }
+        }
+
         $inspects = null;
         $this->attributes['extends'] = ($node->extends->parts ?? null)
             ? $this->combinePath(
@@ -547,5 +561,28 @@ class Inspector
         return class_exists(
             $className
         );
+    }
+
+    protected function containsConstant(Node\Stmt\Const_ $needle, array $haystack): bool
+    {
+        return false;
+    }
+
+    protected function containsField(Node\Stmt\Property $needle, array $haystack): bool
+    {
+        return false;
+    }
+
+    protected function containsClassMethod(Node\Stmt\ClassMethod $needle, array $haystack): bool
+    {
+        foreach ($haystack as $classMethod) {
+            /**
+             * @var Node\Stmt\ClassMethod $classMethod
+             */
+            if ($needle->name->name === $classMethod->name->name) {
+                return true;
+            }
+        }
+        return false;
     }
 }
