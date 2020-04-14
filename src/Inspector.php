@@ -314,6 +314,32 @@ class Inspector
                 $node->extends->parts
             );
 
+            $traitUses = array_reduce(
+                $node->stmts,
+                static function ($carry, $stmt) {
+                    if ($stmt instanceof Node\Stmt\TraitUse) {
+                        $carry[] = $stmt;
+                    }
+                    return $carry;
+                },
+                []
+            );
+
+            $uses = [];
+            foreach ($traitUses as $traitUse) {
+                foreach ($traitUse->traits as $trait) {
+                    $uses = array_merge(
+                        $uses,
+                        $this->getExtendedClasses(
+                            $this->combinePath(
+                                $this->namespace,
+                                $trait->parts
+                            )
+                        )
+                    );
+                }
+            }
+
             $extendedClasses = $this->getExtendedClasses(
                 $extendedClassPath
             );
