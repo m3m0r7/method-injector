@@ -68,7 +68,7 @@ class Inspector
 
     protected $enableParentMock = false;
 
-    protected $expandTrait = false;
+    protected $expandTrait = true;
 
     protected $inheritOriginalClass = false;
 
