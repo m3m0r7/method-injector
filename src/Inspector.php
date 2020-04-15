@@ -320,30 +320,12 @@ class Inspector
             );
 
             if ($this->expandTrait) {
-                $traitUses = array_reduce(
-                    $node->stmts,
-                    static function ($carry, $stmt) {
-                        if ($stmt instanceof Node\Stmt\TraitUse) {
-                            $carry[] = $stmt;
-                        }
-                        return $carry;
-                    },
-                    []
+                $extendedClasses = array_merge(
+                    $extendedClasses,
+                    $this->getTraitInspectorsInClassNode(
+                        $node
+                    )
                 );
-
-                foreach ($traitUses as $traitUse) {
-                    foreach ($traitUse->traits as $trait) {
-                        $extendedClasses = array_merge(
-                            $extendedClasses,
-                            $this->getExtendedClasses(
-                                $this->combinePath(
-                                    $this->namespace,
-                                    $trait->parts
-                                )
-                            )
-                        );
-                    }
-                }
             }
 
             if ($this->isClass) {
@@ -472,6 +454,40 @@ class Inspector
     }
 
     /**
+     * @param Node\Stmt\Class_|Node\Stmt\Trait_ $node
+     * @return Inspector[]
+     */
+    protected function getTraitInspectorsInClassNode(Node $node): array
+    {
+        $extendedClasses = [];
+        $traitUses = array_reduce(
+            $node->stmts,
+            static function ($carry, $stmt) {
+                if ($stmt instanceof Node\Stmt\TraitUse) {
+                    $carry[] = $stmt;
+                }
+                return $carry;
+            },
+            []
+        );
+
+        foreach ($traitUses as $traitUse) {
+            foreach ($traitUse->traits as $trait) {
+                $extendedClasses = array_merge(
+                    $extendedClasses,
+                    $this->getExtendedClasses(
+                        $this->combinePath(
+                            $this->namespace,
+                            $trait->parts
+                        )
+                    )
+                );
+            }
+        }
+        return $extendedClasses;
+    }
+
+    /**
      * @param Inspector[] $inspectors
      */
     protected function mergeInspectors(array $inspectors, Node &$node): void
@@ -579,6 +595,7 @@ class Inspector
         $inspectors = [];
 
         do {
+            $nextStep = false;
             $class = ltrim($class, '\\');
             $inspector = static::factory(
                 $this->args,
@@ -609,11 +626,18 @@ class Inspector
 
             $inspectors[] = $inspector;
 
-            if ($inspector->isTrait()) {
-                // Stop
-                break;
+            // Find traits in the trait or class node
+            $inspectors = array_merge(
+                $inspectors,
+                $this->getTraitInspectorsInClassNode(
+                    $mockedNode
+                )
+            );
+
+            if ($inspector->isClass()) {
+                $nextStep = $mockedNode->extends !== null;
             }
-        } while ($mockedNode->extends !== null);
+        } while ($nextStep);
 
         return $inspectors;
     }
