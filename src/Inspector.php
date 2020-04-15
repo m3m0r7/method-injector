@@ -76,6 +76,7 @@ class Inspector
 
     protected $isClass = false;
     protected $isTrait = false;
+    protected $isBuiltIn = false;
 
     public static function factory(array $args, string $className, bool $inheritOriginalClass = false)
     {
@@ -170,9 +171,7 @@ class Inspector
         $reflection = new \ReflectionClass($className);
 
         if ($reflection->getFileName() === false) {
-            throw new MethodInjectorException(
-                'Cannot get declared file. The MethodInjector cannot create a mock with built-in classes.'
-            );
+            $this->isBuiltIn = true;
         }
 
         $filePath = file_get_contents(
@@ -223,6 +222,11 @@ class Inspector
 
     public function patch(): self
     {
+        if ($this->isBuiltIn) {
+            throw new MethodInjectorException(
+                'Cannot get declared file. The MethodInjector cannot create a mock with built-in classes.'
+            );
+        }
         foreach ($this->ast as $inspect) {
             $recursiveNodes = $this->recursiveNode($inspect);
             $aliases = [];
@@ -453,6 +457,11 @@ class Inspector
         return $this->isClass;
     }
 
+    public function isBuiltIn(): bool
+    {
+        return $this->isBuiltIn;
+    }
+
     /**
      * @param Node\Stmt\Class_|Node\Stmt\Trait_ $node
      * @return Inspector[]
@@ -582,6 +591,7 @@ class Inspector
         return [
             'className' => $this->className,
             'patched' => (bool) $this->mockedNode,
+            'isBuiltIn' => $this->isBuiltIn,
             'isClass' => $this->isClass,
             'isTrait' => $this->isTrait,
         ];
@@ -609,6 +619,12 @@ class Inspector
                     $condition
                 );
             }
+
+            if ($inspector->isBuiltIn()) {
+                // Cannot ref the class.
+                break;
+            }
+
             $mockedNode = $inspector
                 ->enableParentMock(false)
                 ->expandTraits($this->expandTrait)
