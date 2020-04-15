@@ -292,7 +292,9 @@ class Inspector
         /**
          * @var Node $node
          */
-        if (!($node instanceof Node\Stmt\Class_)) {
+        if (!($node instanceof Node\Stmt\Class_)
+            && !($node instanceof Node\Stmt\Trait_)
+        ) {
             return;
         }
 
@@ -422,10 +424,16 @@ class Inspector
             }
         }
 
+        $this->mockedNode = $node;
+
         $this->mergeInspectors(
             $extendedClasses,
             $node
         );
+
+        if ($this->isTrait) {
+            return;
+        }
 
         $this->attributes['extends'] = ($node->extends->parts ?? null)
             ? $this->combinePath(
@@ -443,8 +451,6 @@ class Inspector
             },
             $node->implements
         );
-
-        $this->mockedNode = $node;
     }
 
     public function getNamespace(): ?string
@@ -472,7 +478,11 @@ class Inspector
     {
         // Prepend method nodes.
         foreach ($inspectors as $extendedClassInspector) {
+            /**
+             * @var Node|Node\Stmt\ClassMethod[]|Node\Stmt\Property[] $mockedNode
+             */
             $mockedNode = $extendedClassInspector->getMockedNode();
+
             foreach ($mockedNode->getMethods() as $method) {
                 if ($this->containsClassMethod($method, $node->getMethods())) {
                     continue;
@@ -481,6 +491,28 @@ class Inspector
                     $node->stmts,
                     $method
                 );
+            }
+
+            foreach ($mockedNode->getProperties() as $field) {
+                if ($this->containsField($field, $node->getProperties())) {
+                    continue;
+                }
+                array_unshift(
+                    $node->stmts,
+                    $field
+                );
+            }
+
+            if ($extendedClassInspector->isClass()) {
+                foreach ($mockedNode->getConstants() as $constant) {
+                    if ($this->containsConstant($constant, $node->getConstants())) {
+                        continue;
+                    }
+                    array_unshift(
+                        $node->stmts,
+                        $constant
+                    );
+                }
             }
         }
     }
