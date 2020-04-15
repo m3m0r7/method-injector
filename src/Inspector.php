@@ -302,6 +302,14 @@ class Inspector
             return;
         }
 
+        // Remove attributes
+        foreach ($node->stmts as $stmt) {
+            /**
+             * @var Node $stmt
+             */
+            $stmt->setAttributes([]);
+        }
+
         $classPathAndName = $this->combinePath(
             $this->namespace,
             [$node->name->name]
