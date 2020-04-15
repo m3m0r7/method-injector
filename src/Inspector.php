@@ -74,6 +74,9 @@ class Inspector
 
     protected $args = [];
 
+    protected $isClass = false;
+    protected $isTrait = false;
+
     public static function factory(array $args, string $className, bool $inheritOriginalClass = false)
     {
         return new static(
@@ -141,11 +144,7 @@ class Inspector
     {
         static $parser;
 
-        if (!$this->validateUserDefinedClass($className)) {
-            throw new MethodInjectorException(
-                'The specified class is not a user defined.'
-            );
-        }
+        $this->assignClassType($className);
 
         $this->args = $args;
         $this->inheritOriginalClass = $inheritOriginalClass;
@@ -307,6 +306,10 @@ class Inspector
         }
 
         // if enable parent mock?
+
+        /**
+         * @var Inspector[] $extendedClasses
+         */
         $extendedClasses = [];
         if ($this->enableParentMock && $node->extends !== null) {
             $extendedClassPath = $this->combinePath(
@@ -314,35 +317,41 @@ class Inspector
                 $node->extends->parts
             );
 
-            $traitUses = array_reduce(
-                $node->stmts,
-                static function ($carry, $stmt) {
-                    if ($stmt instanceof Node\Stmt\TraitUse) {
-                        $carry[] = $stmt;
-                    }
-                    return $carry;
-                },
-                []
-            );
+            if ($this->expandTrait) {
+                $traitUses = array_reduce(
+                    $node->stmts,
+                    static function ($carry, $stmt) {
+                        if ($stmt instanceof Node\Stmt\TraitUse) {
+                            $carry[] = $stmt;
+                        }
+                        return $carry;
+                    },
+                    []
+                );
 
-            $uses = [];
-            foreach ($traitUses as $traitUse) {
-                foreach ($traitUse->traits as $trait) {
-                    $uses = array_merge(
-                        $uses,
-                        $this->getExtendedClasses(
-                            $this->combinePath(
-                                $this->namespace,
-                                $trait->parts
+                foreach ($traitUses as $traitUse) {
+                    foreach ($traitUse->traits as $trait) {
+                        $extendedClasses = array_merge(
+                            $extendedClasses,
+                            $this->getExtendedClasses(
+                                $this->combinePath(
+                                    $this->namespace,
+                                    $trait->parts
+                                )
                             )
-                        )
-                    );
+                        );
+                    }
                 }
             }
 
-            $extendedClasses = $this->getExtendedClasses(
-                $extendedClassPath
-            );
+            if ($this->isClass) {
+                $extendedClasses = array_merge(
+                    $extendedClasses,
+                    $this->getExtendedClasses(
+                        $extendedClassPath
+                    )
+                );
+            }
         }
 
         foreach ($node->getProperties() as &$property) {
@@ -413,21 +422,11 @@ class Inspector
             }
         }
 
-        // Prepend method nodes.
-        foreach ($extendedClasses as $extendedClassInspector) {
-            $mockedNode = $extendedClassInspector->getMockedNode();
-            foreach ($mockedNode->getMethods() as $method) {
-                if ($this->containsClassMethod($method, $node->getMethods())) {
-                    continue;
-                }
-                array_unshift(
-                    $node->stmts,
-                    $method
-                );
-            }
-        }
+        $this->mergeInspectors(
+            $extendedClasses,
+            $node
+        );
 
-        $inspects = null;
         $this->attributes['extends'] = ($node->extends->parts ?? null)
             ? $this->combinePath(
                 $this->namespace,
@@ -454,6 +453,36 @@ class Inspector
             return null;
         }
         return implode('\\', $this->namespace);
+    }
+
+    public function isTrait(): bool
+    {
+        return $this->isTrait;
+    }
+
+    public function isClass(): bool
+    {
+        return $this->isClass;
+    }
+
+    /**
+     * @param Inspector[] $inspectors
+     */
+    protected function mergeInspectors(array $inspectors, Node &$node): void
+    {
+        // Prepend method nodes.
+        foreach ($inspectors as $extendedClassInspector) {
+            $mockedNode = $extendedClassInspector->getMockedNode();
+            foreach ($mockedNode->getMethods() as $method) {
+                if ($this->containsClassMethod($method, $node->getMethods())) {
+                    continue;
+                }
+                array_unshift(
+                    $node->stmts,
+                    $method
+                );
+            }
+        }
     }
 
     /**
@@ -505,6 +534,8 @@ class Inspector
         return [
             'className' => $this->className,
             'patched' => (bool) $this->mockedNode,
+            'isClass' => $this->isClass,
+            'isTrait' => $this->isTrait,
         ];
     }
 
@@ -535,14 +566,21 @@ class Inspector
                 ->patch()
                 ->getMockedNode();
 
-            if ($mockedNode->extends !== null) {
-                $class = $this->combinePath(
-                    $this->namespace,
-                    $mockedNode->extends->parts
-                );
+            if ($inspector->isClass()) {
+                if ($mockedNode->extends !== null) {
+                    $class = $this->combinePath(
+                        $this->namespace,
+                        $mockedNode->extends->parts
+                    );
+                }
             }
 
             $inspectors[] = $inspector;
+
+            if ($inspector->isTrait()) {
+                // Stop
+                break;
+            }
         } while ($mockedNode->extends !== null);
 
         return $inspectors;
@@ -582,10 +620,20 @@ class Inspector
         );
     }
 
-    protected function validateUserDefinedClass(string $className): bool
+    protected function assignClassType(string $className): void
     {
-        return class_exists(
-            $className
+        if (class_exists($className)) {
+            $this->isClass = true;
+            return;
+        }
+
+        if (trait_exists($className)) {
+            $this->isTrait = true;
+            return;
+        }
+
+        throw new MethodInjectorException(
+            'The specified class is not a user defined.'
         );
     }
 
