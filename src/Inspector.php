@@ -68,7 +68,7 @@ class Inspector
 
     protected $enableParentMock = false;
 
-    protected $expandTrait = true;
+    protected $enableTraitsMock = true;
 
     protected $inheritOriginalClass = false;
 
@@ -214,9 +214,9 @@ class Inspector
         return $this;
     }
 
-    public function expandTraits(bool $which): self
+    public function enalbeTraitsMock(bool $which): self
     {
-        $this->expandTrait = $which;
+        $this->enableTraitsMock = $which;
         return $this;
     }
 
@@ -326,7 +326,7 @@ class Inspector
          */
         $extendedClasses = [];
 
-        if ($this->expandTrait) {
+        if ($this->enableTraitsMock) {
             $extendedClasses = array_merge(
                 $extendedClasses,
                 $this->getTraitInspectorsInClassNode(
@@ -658,7 +658,7 @@ class Inspector
 
             $mockedNode = $inspector
                 ->enableParentMock(false)
-                ->expandTraits($this->expandTrait)
+                ->enalbeTraitsMock($this->enableTraitsMock)
                 ->patch()
                 ->getMockedNode();
 

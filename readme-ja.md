@@ -455,5 +455,32 @@ $test
     ->patch();
 ```
 
+## 親クラスやトレイトに定義されているフィールドやクラスも同時にモック化する
+`MethodInjector` は親クラスに定義されているメソッドやフィールド、そして同様にトレイトも静的解析を行い AST に分解し、それぞれモック化を行う機能があります。
+この機能を使うことにより、テストダブルを作成する際に親クラス及びトレイトのメソッドをどうモック化すればよいかを考える必要がなくなり、目の前のテストを書くことに集中することができます。
+また `MethodInjector` は再帰的にクラスを参照するため、親クラスだけに留まらず、親クラスの親クラスであったり、トレイトであればトレイト内で定義されているトレイトもモック化の対象にすることも可能です。
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MethodInjector\Condition;
+use MethodInjector\Inspector;
+use MethodInjector\MethodInjector;
+
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->enableParentMock(true)
+                ->enalbeTraitsMock(true);
+        }
+    )
+    ->patch();
+```
+
+
 ## ライセンス
 MIT

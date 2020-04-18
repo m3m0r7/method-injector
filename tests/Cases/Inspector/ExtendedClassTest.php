@@ -16,7 +16,7 @@ class ExtendedClassTest extends \PHPUnit\Framework\TestCase
                 function (Inspector $inspector) {
                     return $inspector
                         ->enableParentMock(true)
-                        ->expandTraits(true);
+                        ->enalbeTraitsMock(true);
                 },
                 true
             )

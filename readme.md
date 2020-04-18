@@ -454,5 +454,34 @@ $test
     ->patch();
 ```
 
+
+## To mock defined constants, fields and methods in the class or trait.
+The `MethodInjector` performs static analysis of the methods and fields defined in the parent class, as well as the traits, and decomposes them into ASTs and mocks them.
+This feature allows you to focus on writing the test in front of you instead of having to think about how to mock the methods of the parent classes and traits when creating a test double.
+Also, since `MethodInjector` refers to a class recursively, it is possible to mock not only the parent class but also the parent class of the parent class, or if it is a trail, a trail defined in a trail.
+
+```php
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MethodInjector\Condition;
+use MethodInjector\Inspector;
+use MethodInjector\MethodInjector;
+
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->enableParentMock(true)
+                ->enalbeTraitsMock(true);
+        }
+    )
+    ->patch();
+```
+
+
+
 ## License
 MIT
