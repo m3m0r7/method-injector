@@ -478,7 +478,7 @@ $test
         function (Inspector $inspector) {
             return $inspector
                 ->enableParentMock(true)
-                ->enalbeTraitsMock(true);
+                ->enableTraitsMock(true);
         }
     )
     ->patch();

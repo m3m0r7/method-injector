@@ -214,7 +214,7 @@ class Inspector
         return $this;
     }
 
-    public function enalbeTraitsMock(bool $which): self
+    public function enableTraitsMock(bool $which): self
     {
         $this->enableTraitsMock = $which;
         return $this;
@@ -658,7 +658,7 @@ class Inspector
 
             $mockedNode = $inspector
                 ->enableParentMock(false)
-                ->enalbeTraitsMock($this->enableTraitsMock)
+                ->enableTraitsMock($this->enableTraitsMock)
                 ->patch()
                 ->getMockedNode();
 
