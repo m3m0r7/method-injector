@@ -3,6 +3,9 @@ namespace MethodInjector\Test\Fixtures;
 
 class ExtendedClassTest extends AbstractTestClass
 {
+    const A = 'A';
+    const B = 'B';
+
     use Trait1;
     use Trait3;
 
