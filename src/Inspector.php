@@ -673,14 +673,6 @@ class Inspector
 
             $inspectors[] = $inspector;
 
-            // Find traits in the trait or class node
-            $inspectors = array_merge(
-                $inspectors,
-                $this->getTraitInspectorsInClassNode(
-                    $mockedNode
-                )
-            );
-
             if ($inspector->isClass()) {
                 $nextStep = $mockedNode->extends !== null;
             }

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 namespace MethodInjector;
 
+use MethodInjector\Helper\NodeFilter;
 use PhpParser\Node;
 use PhpParser\PrettyPrinter\Standard;
 
@@ -83,6 +84,14 @@ class MethodInjector
             );
         }
 
+        $mockedClassName = $this->generateMockedCode($className);
+
+        eval($this->generatedCode);
+        return new $mockedClassName(...$arguments);
+    }
+
+    public function generateMockedCode(string $className)
+    {
         $prettyPrinter = new Standard();
 
         /**
@@ -115,21 +124,27 @@ class MethodInjector
         $mockedCode = implode([
             $prettyPrinter
                 ->prettyPrint(
-                    $inspector
-                        ->getMockedNode()
-                        ->getProperties()
+                    NodeFilter::filterFields(
+                        $inspector
+                            ->getMockedNode()
+                            ->getProperties()
+                    )
                 ),
             $prettyPrinter
                 ->prettyPrint(
-                    $inspector
-                        ->getMockedNode()
-                        ->getConstants()
+                    NodeFilter::filterConstants(
+                        $inspector
+                            ->getMockedNode()
+                            ->getConstants()
+                    )
                 ),
             $prettyPrinter
                 ->prettyPrint(
-                    $inspector
-                        ->getMockedNode()
-                        ->getMethods()
+                    NodeFilter::filterMethods(
+                        $inspector
+                            ->getMockedNode()
+                            ->getMethods()
+                    )
                 ),
         ]);
 
@@ -166,15 +181,14 @@ class MethodInjector
 
         $this->generatedCode = $generatedCode;
 
-        eval($generatedCode);
-        return new $mockedClassName(...$arguments);
+        return $mockedClassName;
     }
 
     public function getGeneratedCodeTraceAsString(): string
     {
         if ($this->generatedCode === null) {
             throw new MethodInjectorException(
-                'Not generated codes yet. Did you forget to run `createMock`?'
+                'Not generated codes yet. Did you forget to run `createMock` or `generateMockedCode`?'
             );
         }
         return (string) $this->generatedCode;
