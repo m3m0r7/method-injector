@@ -325,22 +325,23 @@ class Inspector
          * @var Inspector[] $extendedClasses
          */
         $extendedClasses = [];
-        if ($this->enableParentMock && $node->extends !== null) {
-            $extendedClassPath = $this->combinePath(
-                $this->namespace,
-                $node->extends->parts
+
+        if ($this->expandTrait) {
+            $extendedClasses = array_merge(
+                $extendedClasses,
+                $this->getTraitInspectorsInClassNode(
+                    $node
+                )
             );
+        }
 
-            if ($this->expandTrait) {
-                $extendedClasses = array_merge(
-                    $extendedClasses,
-                    $this->getTraitInspectorsInClassNode(
-                        $node
-                    )
-                );
-            }
-
+        if ($this->enableParentMock && $node->extends !== null) {
             if ($this->isClass) {
+                $extendedClassPath = $this->combinePath(
+                    $this->namespace,
+                    $node->extends->parts
+                );
+
                 $extendedClasses = array_merge(
                     $extendedClasses,
                     $this->getExtendedClasses(
