@@ -17,7 +17,7 @@
 - [English](./readme.md)
 
 # DEMO
-<img src="docs/demo.gif">
+<img src="docs/demo.gif" width="100%">
 
 # クイックスタート
 下記よりインストール可能です。

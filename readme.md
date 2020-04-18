@@ -17,7 +17,7 @@ However, it is also possible to inherit the original class and create a test dou
 - English
 
 # DEMO
-<img src="docs/demo.gif">
+<img src="docs/demo.gif" width="100%">
 
 # Quick start
 It can be installed from the following.
