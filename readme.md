@@ -16,6 +16,9 @@ However, it is also possible to inherit the original class and create a test dou
 - [日本語](./readme-ja.md)
 - English
 
+# DEMO
+<img src="docs/demo.gif">
+
 # Quick start
 It can be installed from the following.
 

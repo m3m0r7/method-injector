@@ -16,6 +16,9 @@
 - 日本語
 - [English](./readme.md)
 
+# DEMO
+<img src="docs/demo.gif">
+
 # クイックスタート
 下記よりインストール可能です。
 
