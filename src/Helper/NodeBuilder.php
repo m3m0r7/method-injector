@@ -115,6 +115,11 @@ class NodeBuilder
         );
     }
 
+    public static function makeClassConstantGroup(Node\Const_ ...$consts)
+    {
+        return new Node\Stmt\ClassConst($consts);
+    }
+
     public static function callable(Node $caller, array $args = []): Node\Expr
     {
         return new Node\Expr\FuncCall($caller, $args);

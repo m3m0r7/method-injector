@@ -538,13 +538,20 @@ class Inspector
             }
 
             if ($extendedClassInspector->isClass()) {
-                foreach ($mockedNode->getConstants() as $constant) {
-                    if ($this->containsConstant($constant, $node->getConstants())) {
-                        continue;
+                foreach ($mockedNode->getConstants() as $consts) {
+                    $mergeConstants = [];
+                    foreach ($consts->consts as $const) {
+                        if ($this->containsConstant($const, $node->getConstants())) {
+                            continue;
+                        }
+                        $mergeConstants[] = $const;
                     }
+
                     array_unshift(
                         $node->stmts,
-                        $constant
+                        NodeBuilder::makeClassConstantGroup(
+                            ...$mergeConstants
+                        )
                     );
                 }
             }
@@ -718,8 +725,16 @@ class Inspector
         );
     }
 
-    protected function containsConstant(Node\Stmt\Const_ $needle, array $haystack): bool
+    protected function containsConstant(Node\Const_ $needle, array $haystack): bool
     {
+        foreach ($haystack as $const) {
+            if (!($const instanceof Node\Const_)) {
+                continue;
+            }
+            if ($needle->name->name === $const->name->name) {
+                return true;
+            }
+        }
         return false;
     }
 
