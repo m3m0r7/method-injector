@@ -59,7 +59,7 @@ class Inspector
     /**
      * @var array
      */
-    protected $namespace;
+    protected $namespace = [];
 
     /**
      * @var array
