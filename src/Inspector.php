@@ -527,13 +527,24 @@ class Inspector
                 );
             }
 
-            foreach ($mockedNode->getProperties() as $field) {
-                if ($this->containsField($field, $node->getProperties())) {
+            foreach ($mockedNode->getProperties() as $fields) {
+                $mergeFields = [];
+                foreach ($fields->props as $field) {
+                    if ($this->containsField($field, $node->getProperties())) {
+                        continue;
+                    }
+
+                    $mergeFields[] = $field;
+                }
+                if (empty($mergeFields)) {
                     continue;
                 }
                 array_unshift(
                     $node->stmts,
-                    $field
+                    NodeBuilder::makeClassFieldsGroup(
+                        $fields->flags,
+                        ...$mergeFields
+                    )
                 );
             }
 
@@ -547,9 +558,13 @@ class Inspector
                         $mergeConstants[] = $const;
                     }
 
+                    if (empty($mergeConstants)) {
+                        continue;
+                    }
                     array_unshift(
                         $node->stmts,
                         NodeBuilder::makeClassConstantGroup(
+                            $consts->flags,
                             ...$mergeConstants
                         )
                     );
@@ -738,8 +753,16 @@ class Inspector
         return false;
     }
 
-    protected function containsField(Node\Stmt\Property $needle, array $haystack): bool
+    protected function containsField(Node\Stmt\PropertyProperty $needle, array $haystack): bool
     {
+        foreach ($haystack as $property) {
+            if (!($property instanceof Node\Stmt\PropertyProperty)) {
+                continue;
+            }
+            if ($needle->name->name === $property->name->name) {
+                return true;
+            }
+        }
         return false;
     }
 
