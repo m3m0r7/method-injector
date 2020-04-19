@@ -52,6 +52,13 @@ class NodeFinder
                 $callback
             );
         }
+        if (property_exists($node, 'stmts')) {
+            return $this->processMulti(
+                $node->stmts,
+                $callback
+            );
+        }
+
         if (property_exists($node, 'expr')) {
             return $this->recursiveFind($node->expr, $callback);
         }

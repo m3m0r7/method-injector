@@ -378,8 +378,10 @@ class Inspector
                 $aliases
             );
 
+            $loweredMethodName = strtolower($method->name->name);
+
             foreach ($conditions as $name => $condition) {
-                if ($name !== '*' && $method->name->name !== $name) {
+                if ($name !== '*' && $loweredMethodName !== strtolower($name)) {
                     continue;
                 }
 
