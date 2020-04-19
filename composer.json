@@ -3,7 +3,7 @@
     "description": "The library enhance mocking your test.",
     "type": "library",
     "license": "MIT",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "authors": [
         {
             "name": "memory"
