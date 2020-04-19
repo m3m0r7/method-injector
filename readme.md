@@ -485,6 +485,103 @@ $test
 ```
 
 
+# Builder
+If you are using `MethodInjector`, you may feel that the amount of code to make a mock is long. Therefore, the `MethodInjector` has a `MethodInjector`
+object, a builder class called `ConditionBuilder` is provided to make it easier to create objects.
+The `ConditionBuilder` mocks the methods and properties of the parent class and all traits by default.
+
+
+```php
+<?php
+use MethodInjector\Builder\ConditionBuilder;
+
+$builder = ConditionBuilder::factory(Test::class)
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '9999-99-99';
+        }
+    )
+    ->make()
+    ->patch();
+```
+
+It is possible to write the above. Also, the above is equivalent to the following.
+
+```php
+<?php
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->methodGroup(
+                    '*',
+                    function (Condition $condition) {
+                        return $condition
+                            ->replaceFunction(
+                                'date',
+                                function (...$args) {
+                                    return '9999-99-99';
+                                }
+                            );
+                    }
+                )
+                ->enableParentMock(true)
+                ->enableTraitsMock(true);
+        }
+    )
+    ->patch();
+```
+
+The range of methods applied by `ConditionBuilder` is `*` by default, that is, all methods.
+However, you may want to mock only some of the methods. In that case, you can use the `group` to specify a method to be mutable.
+
+
+```php
+<?php
+use MethodInjector\Builder\ConditionBuilder;
+
+$builder = ConditionBuilder::factory(Test::class)
+    ->group('doSomething')
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '9999-99-99';
+        }
+    )
+    ->make()
+    ->patch();
+```
+
+In this case, all the `date` functions in `doSomething` are mocked.
+
+
+```php
+<?php
+use MethodInjector\Builder\ConditionBuilder;
+
+$builder = ConditionBuilder::factory(Test::class)
+    ->group('doSomething1')
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '9999-99-99';
+        }
+    )
+    ->group('doSomething2')
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '0000-00-00';
+        }
+    )
+    ->make()
+    ->patch();
+```
+
+In the above case, the date executed with `doSomething1` will return `9999-99-99` and the date executed with `doSomething2` will return `0000-00-00`.
 
 ## License
 MIT

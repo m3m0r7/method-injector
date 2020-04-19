@@ -484,6 +484,103 @@ $test
     ->patch();
 ```
 
+# ビルダー
+`MethodInjector` を使っているとモックを作るためのコードの量が長いと感じることがあるかと思います。そのため、 `MethodInjector` には `MethodInjector` の
+オブジェクトを簡易的に生成できるように `ConditionBuilder` と呼ばれるビルダークラスを用意しています。
+`ConditionBuilder` はデフォルトで親クラス及びトレイトすべてのメソッド及びプロパティをモック化します。
+
+
+```php
+<?php
+use MethodInjector\Builder\ConditionBuilder;
+
+$builder = ConditionBuilder::factory(Test::class)
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '9999-99-99';
+        }
+    )
+    ->make()
+    ->patch();
+```
+
+上記のように記述することが可能です。また、上記は下記と等価です。
+
+```php
+<?php
+$test = \MethodInjector\MethodInjector::factory();
+$test
+    ->inspect(
+        Test::class,
+        function (Inspector $inspector) {
+            return $inspector
+                ->methodGroup(
+                    '*',
+                    function (Condition $condition) {
+                        return $condition
+                            ->replaceFunction(
+                                'date',
+                                function (...$args) {
+                                    return '9999-99-99';
+                                }
+                            );
+                    }
+                )
+                ->enableParentMock(true)
+                ->enableTraitsMock(true);
+        }
+    )
+    ->patch();
+```
+
+`ConditionBuilder` で適用されるメソッドの範囲はデフォルトにおいては `*`, つまりすべてのメソッドが対象です。
+しかし、一部のメソッドのみのモック化をしたい場合もあると思います。その場合は `group` を使うことによってミュータブルに変更対象のメソッドを指定することが可能です。
+
+
+```php
+<?php
+use MethodInjector\Builder\ConditionBuilder;
+
+$builder = ConditionBuilder::factory(Test::class)
+    ->group('doSomething')
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '9999-99-99';
+        }
+    )
+    ->make()
+    ->patch();
+```
+
+この場合、 `doSomething` 内の `date` 関数をすべてモック化するということになります。
+
+
+```php
+<?php
+use MethodInjector\Builder\ConditionBuilder;
+
+$builder = ConditionBuilder::factory(Test::class)
+    ->group('doSomething1')
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '9999-99-99';
+        }
+    )
+    ->group('doSomething2')
+    ->replaceFunction(
+        'date',
+        function (...$args) {
+            return '0000-00-00';
+        }
+    )
+    ->make()
+    ->patch();
+```
+
+上記の場合は `doSomething1` で実行されている date は `9999-99-99` を返し `doSomething2` で実行されている date は `0000-00-00` を返すようになります。
 
 ## ライセンス
 MIT
